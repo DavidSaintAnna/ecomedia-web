@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { useStats } from '../api/hooks';
 import type { Stats } from '../api/types';
 
@@ -23,6 +24,9 @@ export function Home() {
           Compartilhe o que você faz pela sua cidade, descubra o que seus vizinhos estão fazendo e inspire mais gente a
           cuidar do lugar onde vive.
         </p>
+        <Link to="/explorar" className="btn">
+          Explorar publicações
+        </Link>
       </section>
 
       <section aria-labelledby="titulo-numeros">

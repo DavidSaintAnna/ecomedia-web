@@ -37,6 +37,7 @@ export function Layout() {
             <NavLink to="/" end>
               Início
             </NavLink>
+            <NavLink to="/explorar">Explorar</NavLink>
             {status === 'ready' && !user && (
               <>
                 <NavLink to="/entrar">Entrar</NavLink>

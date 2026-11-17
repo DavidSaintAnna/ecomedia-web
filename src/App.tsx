@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import { Cadastro } from './pages/Cadastro';
 import { Conta } from './pages/Conta';
 import { Entrar } from './pages/Entrar';
+import { Explorar } from './pages/Explorar';
 import { Home } from './pages/Home';
 import { NotFound } from './pages/NotFound';
 
@@ -12,6 +13,7 @@ export function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<Home />} />
+        <Route path="explorar" element={<Explorar />} />
         <Route path="entrar" element={<Entrar />} />
         <Route path="cadastro" element={<Cadastro />} />
         <Route element={<RequireAuth />}>
