@@ -90,12 +90,7 @@ export function Explorar() {
         {resposta && resposta.meta.total === 0 && (
           <div className="vazio">
             {ativo ? (
-              <>
-                <p>Nenhuma publicação encontrada com esses filtros.</p>
-                <button type="button" className="btn" onClick={() => setParams(new URLSearchParams())}>
-                  Limpar filtros
-                </button>
-              </>
+              <p>Nenhuma publicação encontrada com esses filtros. Tente outras palavras ou use Limpar filtros.</p>
             ) : (
               <p>Ainda não há publicações. Quando alguém publicar, elas aparecem aqui.</p>
             )}

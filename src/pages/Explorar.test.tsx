@@ -208,7 +208,8 @@ describe('Explorar: estados', () => {
   it('sem resultado com filtro: avisa e oferece limpar', async () => {
     montar();
     renderApp('/explorar?q=xyz');
-    expect(await screen.findByText('Nenhuma publicação encontrada com esses filtros.')).toBeInTheDocument();
+    expect(await screen.findByText(/Nenhuma publicação encontrada com esses filtros/)).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Limpar filtros' })).toHaveLength(1); // só o do formulário
     expect(screen.queryByRole('navigation', { name: 'Paginação' })).not.toBeInTheDocument();
   });
 
