@@ -103,3 +103,36 @@ nav a.active { color: var(--verde-900); border-bottom-color: var(--verde-700); }
 @media (min-width: 640px) {
   .numeros { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* Navegação com login */
+nav { align-items: center; }
+.nav-destaque { background: var(--verde-700); color: #fff; padding: 6px 12px; border-radius: 8px; border-bottom: 0; }
+nav a.nav-destaque.active { color: #fff; border-bottom: 0; background: var(--verde-900); }
+.nav-botao { font: inherit; color: var(--texto-suave); background: none; border: 0; padding: 4px 0; cursor: pointer; text-decoration: underline; }
+.nav-botao:hover { color: var(--verde-900); }
+
+/* Formulários */
+.cartao-form { max-width: 440px; margin-inline: auto; background: #fff; border: 1px solid var(--borda); border-radius: var(--raio); padding: 24px 20px; }
+.cartao-form h1 { margin: 0 0 16px; font-size: 1.5rem; }
+.campo { margin-bottom: 16px; }
+.campo label { display: block; font-weight: 600; margin-bottom: 4px; }
+.campo input { width: 100%; font: inherit; padding: 10px 12px; border: 1px solid #9db3a4; border-radius: 8px; background: #fff; color: var(--texto); }
+.campo input[aria-invalid='true'] { border-color: var(--erro); border-width: 2px; }
+.campo-dica { margin: 0 0 4px; color: var(--texto-suave); font-size: 0.875rem; }
+.campo-erro { margin: 4px 0 0; color: var(--erro); font-size: 0.875rem; font-weight: 600; }
+.aviso { background: var(--aviso-fundo); border: 1px solid var(--aviso-borda); border-radius: 8px; padding: 10px 12px; margin: 0 0 16px; }
+.cartao-form .aviso-erro { margin-bottom: 16px; padding: 10px 12px; }
+.btn:disabled { opacity: 0.6; cursor: wait; }
+.rodape-form { margin: 16px 0 0; color: var(--texto-suave); }
+
+/* Lista de dados (Minha conta) */
+.dados { margin: 0 0 24px; display: grid; gap: 12px; }
+.dados div { background: #fff; border: 1px solid var(--borda); border-radius: var(--raio); padding: 12px 16px; }
+.dados dt { color: var(--texto-suave); font-size: 0.875rem; }
+.dados dd { margin: 2px 0 0; font-weight: 600; word-break: break-word; }
+
+/* Cabeçalho no celular: nada de palavra quebrada; se faltar espaço, o menu desce para a linha de baixo */
+.topo-linha { flex-wrap: wrap; row-gap: 8px; }
+.marca, nav a, .nav-botao { white-space: nowrap; }
+nav { gap: 12px; flex-wrap: wrap; }
+@media (min-width: 480px) { nav { gap: 16px; } }

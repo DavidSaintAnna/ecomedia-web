@@ -11,5 +11,6 @@ export default defineConfig({
     globals: true,
     setupFiles: './src/test/setup.ts',
     css: false,
+    testTimeout: 15_000, // computadores mais lentos (ou OneDrive sincronizando) não derrubam o teste por tempo
   },
 });
