@@ -44,7 +44,11 @@ export function PostCard({ post, detalhe = false, aoExcluir }: Props) {
       <header className="post-topo">
         <Avatar name={post.author.name} url={post.author.avatarUrl} />
         <div>
-          <p className="post-autor">{post.author.name}</p>
+          <p className="post-autor">
+            <Link to={`/pessoas/${post.author.id}`} className="link-pessoa">
+              {post.author.name}
+            </Link>
+          </p>
           <p className="post-meta">
             <time dateTime={post.createdAt} title={dataBR(post.createdAt)}>
               {quando(post.createdAt)}

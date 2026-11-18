@@ -8,6 +8,7 @@ import { Entrar } from './pages/Entrar';
 import { Explorar } from './pages/Explorar';
 import { Home } from './pages/Home';
 import { NotFound } from './pages/NotFound';
+import { Pessoa } from './pages/Pessoa';
 import { PostPage } from './pages/PostPage';
 import { Publicar } from './pages/Publicar';
 
@@ -18,6 +19,7 @@ export function App() {
         <Route index element={<Home />} />
         <Route path="explorar" element={<Explorar />} />
         <Route path="posts/:id" element={<PostPage />} />
+        <Route path="pessoas/:id" element={<Pessoa />} />
         <Route path="entrar" element={<Entrar />} />
         <Route path="cadastro" element={<Cadastro />} />
         <Route element={<RequireAuth />}>

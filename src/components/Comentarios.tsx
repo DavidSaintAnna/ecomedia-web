@@ -58,7 +58,11 @@ function ComentarioItem({ comentario, postId }: { comentario: Comment; postId: n
       <Avatar name={comentario.author.name} url={comentario.author.avatarUrl} />
       <div className="comentario-corpo">
         <p className="comentario-autor">
-          <strong>{comentario.author.name}</strong>{' '}
+          <strong>
+            <Link to={`/pessoas/${comentario.author.id}`} className="link-pessoa">
+              {comentario.author.name}
+            </Link>
+          </strong>{' '}
           <time dateTime={comentario.createdAt} title={dataBR(comentario.createdAt)}>
             {quando(comentario.createdAt)}
           </time>

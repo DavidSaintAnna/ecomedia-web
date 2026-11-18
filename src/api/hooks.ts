@@ -1,7 +1,7 @@
 import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './client';
 import { patchPost } from './postCache';
-import type { Category, Comment, LikeResponse, Paginated, Post, Stats } from './types';
+import type { Category, Comment, FollowResponse, LikeResponse, Paginated, Person, Post, Profile, Stats } from './types';
 
 export function useStats() {
   return useQuery({
@@ -24,16 +24,18 @@ export interface PostFilters {
   q?: string;
   city?: string;
   categoryId?: number;
+  authorId?: number;
   page: number;
   limit: number;
 }
 
 /** Lista de publicações. Ao trocar de página mantém a anterior na tela até a nova chegar (sem piscar). */
-export function usePosts(filters: PostFilters) {
+export function usePosts(filters: PostFilters, enabled = true) {
   return useQuery({
     queryKey: ['posts', filters],
     queryFn: ({ signal }) => api.get<Paginated<Post>>('/api/posts', { query: { ...filters }, signal }),
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 
@@ -178,6 +180,58 @@ export function useDeletePost(id: number) {
       queryClient.removeQueries({ queryKey: ['comments', id] });
       void queryClient.invalidateQueries({ queryKey: ['posts'] });
       void queryClient.invalidateQueries({ queryKey: ['stats'] });
+    },
+  });
+}
+
+/** Perfil público de uma pessoa. `id` null = endereço inválido (/pessoas/abc): nem chama a API. */
+export function useProfile(id: number | null) {
+  return useQuery({
+    queryKey: ['profile', id],
+    queryFn: ({ signal }) => api.get<Profile>(`/api/users/${id}`, { signal }),
+    enabled: id !== null,
+  });
+}
+
+export type ListaDePessoas = 'followers' | 'following';
+
+/** Quem segue a pessoa (followers) ou quem ela segue (following), 10 por página. */
+export function usePessoas(id: number | null, tipo: ListaDePessoas, page: number, enabled = true) {
+  return useQuery({
+    queryKey: ['pessoas', id, tipo, page],
+    queryFn: ({ signal }) => api.get<Paginated<Person>>(`/api/users/${id}/${tipo}`, { query: { page, limit: 10 }, signal }),
+    enabled: enabled && id !== null,
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** Seguir e deixar de seguir é o mesmo POST (a API alterna). O botão muda na hora e depois vale o que a API respondeu. */
+export function useToggleFollow(id: number, meuId: number | undefined) {
+  const queryClient = useQueryClient();
+  const mudarPerfil = (mudar: (p: Profile) => Profile) => queryClient.setQueryData<Profile>(['profile', id], (p) => (p ? mudar(p) : p));
+  return useMutation({
+    mutationFn: (_atual: { followedByMe: boolean; followersCount: number }) => api.post<FollowResponse>(`/api/users/${id}/follow`),
+    onMutate: () => {
+      mudarPerfil((p) => ({
+        ...p,
+        followedByMe: !p.followedByMe,
+        followersCount: Math.max(0, p.followersCount + (p.followedByMe ? -1 : 1)),
+      }));
+    },
+    onError: (_erro, atual) => {
+      mudarPerfil((p) => ({ ...p, ...atual })); // volta ao que era
+    },
+    onSuccess: (resposta) => {
+      mudarPerfil((p) => ({ ...p, followedByMe: resposta.following, followersCount: resposta.followersCount }));
+    },
+    onSettled: () => {
+      // as listas dessa pessoa e as minhas contagens mudaram
+      void queryClient.invalidateQueries({ queryKey: ['pessoas', id] });
+      if (meuId) {
+        void queryClient.invalidateQueries({ queryKey: ['pessoas', meuId] });
+        void queryClient.invalidateQueries({ queryKey: ['profile', meuId] });
+      }
+      void queryClient.invalidateQueries({ queryKey: ['feed'] });
     },
   });
 }

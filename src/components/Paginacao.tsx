@@ -1,16 +1,18 @@
-import { Link } from 'react-router';
+import { Link, type To } from 'react-router';
 import type { ExplorarFiltros } from '../lib/filters';
 import { paraParams } from '../lib/filters';
 
 interface Props {
   filtros: ExplorarFiltros;
   totalPages: number;
+  /** Para telas com outros parâmetros no endereço (como o perfil): monta o link de cada página. */
+  para?: (pagina: number) => To;
 }
 
 // Links de verdade (não botões): dá para abrir a página em outra aba e o endereço fica compartilhável.
-export function Paginacao({ filtros, totalPages }: Props) {
+export function Paginacao({ filtros, totalPages, para: paraPagina }: Props) {
   const pagina = Math.min(filtros.page, totalPages);
-  const para = (n: number) => ({ search: `?${paraParams({ ...filtros, page: n }).toString()}` });
+  const para = paraPagina ?? ((n: number) => ({ search: `?${paraParams({ ...filtros, page: n }).toString()}` }));
 
   return (
     <nav className="paginacao" aria-label="Paginação">

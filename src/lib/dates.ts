@@ -11,6 +11,11 @@ export function dataBR(iso: string): string {
   }).format(new Date(iso));
 }
 
+/** novembro de 2026 */
+export function mesAno(iso: string): string {
+  return new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: FUSO }).format(new Date(iso));
+}
+
 const rtf = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' });
 
 /** há 3 horas, ontem, há 5 dias... */
