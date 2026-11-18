@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { useStats } from '../api/hooks';
 import type { Stats } from '../api/types';
+import { useAviso } from '../lib/useAviso';
 
 const ROTULOS: [keyof Stats, string][] = [
   ['users', 'Pessoas'],
@@ -15,9 +16,15 @@ const numero = new Intl.NumberFormat('pt-BR');
 
 export function Home() {
   const stats = useStats();
+  const [aviso] = useAviso();
 
   return (
     <>
+      {aviso && (
+        <p role="status" className="aviso">
+          {aviso}
+        </p>
+      )}
       <section className="hero">
         <h1>Ações sustentáveis perto de você</h1>
         <p>

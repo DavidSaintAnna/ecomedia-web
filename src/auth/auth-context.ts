@@ -20,6 +20,8 @@ export interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   logout: () => void;
+  /** Atualiza, na tela, os dados da pessoa logada depois que a API aceitou uma edição do perfil. */
+  updateUser: (dados: Partial<AuthUser>) => void;
   retrySession: () => void;
 }
 

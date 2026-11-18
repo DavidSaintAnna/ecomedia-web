@@ -60,7 +60,7 @@ export function validarComentario(texto: string): string | undefined {
   return undefined;
 }
 
-function linkValido(texto: string): boolean {
+export function linkValido(texto: string): boolean {
   try {
     const url = new URL(texto);
     return url.protocol === 'http:' || url.protocol === 'https:';
@@ -92,5 +92,25 @@ export function validarPost(v: { categoryId: string; content: string; imageUrl: 
           ? 'Digite um link válido, começando com http:// ou https://.'
           : undefined,
     city: v.city.trim().length > 100 ? 'A cidade pode ter no máximo 100 letras.' : undefined,
+  });
+}
+
+export const BIO_MAXIMO = 500;
+
+// As mesmas regras da API: nome de 2 a 100, cidade até 100, apresentação até 500, foto (opcional) com link http(s) de até 500.
+export function validarPerfil(v: { name: string; city: string; bio: string; avatarUrl: string }): Erros {
+  const nome = v.name.trim();
+  const foto = v.avatarUrl.trim();
+  return limpar({
+    name: nome.length < 2 ? 'Informe seu nome (pelo menos 2 letras).' : nome.length > 100 ? 'O nome pode ter no máximo 100 letras.' : undefined,
+    city: v.city.trim().length > 100 ? 'A cidade pode ter no máximo 100 letras.' : undefined,
+    bio: v.bio.trim().length > BIO_MAXIMO ? `A apresentação pode ter no máximo ${BIO_MAXIMO} caracteres.` : undefined,
+    avatarUrl: !foto
+      ? undefined
+      : foto.length > 500
+        ? 'O link da foto pode ter no máximo 500 caracteres.'
+        : !linkValido(foto)
+          ? 'Digite um link válido, começando com http:// ou https://.'
+          : undefined,
   });
 }

@@ -72,7 +72,9 @@ async function request<T>(method: string, path: string, body?: unknown, options:
   const token = options.auth === false ? null : tokenStore.get();
 
   const headers: Record<string, string> = { Accept: 'application/json' };
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  // Uma foto (Blob) vai como está, com o tipo dela; todo o resto vai como JSON
+  const ehArquivo = body instanceof Blob;
+  if (body !== undefined) headers['Content-Type'] = ehArquivo ? body.type : 'application/json';
   if (token) headers.Authorization = `Bearer ${token}`;
 
   let response: Response;
@@ -80,7 +82,7 @@ async function request<T>(method: string, path: string, body?: unknown, options:
     response = await fetch(buildUrl(path, options.query), {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : ehArquivo ? body : JSON.stringify(body),
       signal: options.signal,
     });
   } catch (error) {
@@ -119,5 +121,7 @@ export const api = {
   post: <T>(path: string, body?: unknown, options?: RequestOptions) => request<T>('POST', path, body ?? {}, options),
   put: <T>(path: string, body: unknown, options?: RequestOptions) => request<T>('PUT', path, body, options),
   patch: <T>(path: string, body: unknown, options?: RequestOptions) => request<T>('PATCH', path, body, options),
+  /** Envia uma foto (bytes no corpo, sem formulário). */
+  upload: <T>(path: string, foto: Blob, options?: RequestOptions) => request<T>('POST', path, foto, options),
   delete: <T = void>(path: string, options?: RequestOptions) => request<T>('DELETE', path, undefined, options),
 };

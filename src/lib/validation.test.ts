@@ -1,5 +1,5 @@
 import { ApiError } from '../api/client';
-import { errosDaApi, validarCadastro, validarEntrada, validarComentario, validarPost } from './validation';
+import { errosDaApi, validarCadastro, validarEntrada, validarComentario, validarPerfil, validarPost } from './validation';
 
 describe('validarCadastro', () => {
   const ok = { name: 'Maria Souza', email: 'maria@exemplo.com', password: '12345678', city: '' };
@@ -89,5 +89,30 @@ describe('validarComentario', () => {
     expect(validarComentario('1234567890')).toBeUndefined();
     expect(validarComentario('a'.repeat(500))).toBeUndefined();
     expect(validarComentario('a'.repeat(501))).toBe('O comentário pode ter no máximo 500 caracteres.');
+  });
+});
+
+describe('validarPerfil', () => {
+  const ok = { name: 'Maria Souza', city: '', bio: '', avatarUrl: '' };
+
+  it('aceita o mínimo: só o nome', () => {
+    expect(validarPerfil(ok)).toEqual({});
+  });
+
+  it('nome de 2 a 100 letras', () => {
+    expect(validarPerfil({ ...ok, name: ' a ' }).name).toMatch(/pelo menos 2/);
+    expect(validarPerfil({ ...ok, name: 'a'.repeat(101) }).name).toMatch(/no máximo 100/);
+  });
+
+  it('cidade até 100 e apresentação até 500', () => {
+    expect(validarPerfil({ ...ok, city: 'a'.repeat(101) }).city).toMatch(/100/);
+    expect(validarPerfil({ ...ok, bio: 'a'.repeat(501) }).bio).toMatch(/500/);
+    expect(validarPerfil({ ...ok, bio: 'a'.repeat(500) })).toEqual({});
+  });
+
+  it('foto: só link http ou https', () => {
+    expect(validarPerfil({ ...ok, avatarUrl: 'https://x.com/a.png' })).toEqual({});
+    expect(validarPerfil({ ...ok, avatarUrl: 'abc' }).avatarUrl).toMatch(/link válido/);
+    expect(validarPerfil({ ...ok, avatarUrl: 'javascript:alert(1)' }).avatarUrl).toMatch(/link válido/);
   });
 });

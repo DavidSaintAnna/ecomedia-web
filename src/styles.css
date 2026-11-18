@@ -244,3 +244,40 @@ nav { gap: 12px; flex-wrap: wrap; }
   .perfil-acao { grid-column: auto; }
   .lista-pessoas { grid-template-columns: 1fr 1fr; }
 }
+
+/* Feed, ranking e Minha conta */
+.subtitulo { color: var(--texto-suave); max-width: 60ch; margin: 0 0 16px; }
+.filtros-ranking { margin-bottom: 8px; }
+.ranking { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ranking-item { display: grid; grid-template-columns: auto auto 1fr; gap: 12px; align-items: center; background: #fff; border: 1px solid var(--borda); border-radius: var(--raio); padding: 12px; }
+.ranking-item:nth-child(-n+3) { border-color: var(--verde-700); }
+.ranking-posicao { min-width: 2.5ch; font-weight: 800; color: var(--verde-900); font-size: 1.125rem; text-align: center; }
+.ranking-dados { min-width: 0; }
+.ranking-dados p { margin: 0; }
+.ranking-numeros { grid-column: 2 / -1; margin: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.875rem; color: var(--texto-suave); }
+.ranking-numeros strong { color: var(--texto); }
+@media (min-width: 560px) {
+  .ranking-item { grid-template-columns: auto auto 1fr auto; }
+  .ranking-numeros { grid-column: auto; flex-direction: column; text-align: right; gap: 0; }
+}
+.conta-resumo { display: grid; gap: 12px; background: #fff; border: 1px solid var(--borda); border-radius: var(--raio); padding: 20px; margin-bottom: 24px; }
+.conta-resumo p { margin: 0; }
+.bloco-conta { margin-bottom: 32px; }
+.bloco-conta h2 { font-size: 1.25rem; margin: 0 0 12px; }
+.form-conta { margin-inline: 0; }
+.zona-perigo { border: 1px solid var(--erro); border-radius: var(--raio); background: var(--erro-fundo); padding: 20px; }
+.zona-perigo p { margin: 0 0 12px; }
+.confirmar-conta { display: block; }
+
+/* Foto do computador (perfil e publicação) */
+.foto-campo { margin-bottom: 16px; }
+.foto-previa { display: block; max-width: 100%; max-height: 260px; border-radius: 8px; border: 1px solid #9db3a4; margin-bottom: 8px; object-fit: contain; background: #f4f8f5; }
+.foto-previa-redonda { width: 112px; height: 112px; border-radius: 50%; object-fit: cover; }
+.foto-botoes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+/* o campo de arquivo fica escondido só da vista: continua alcançável pelo teclado e leitor de tela */
+.foto-entrada { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.foto-entrada:focus-visible + label { outline: 3px solid var(--verde-700); outline-offset: 2px; }
+.foto-botoes label.btn { cursor: pointer; }
+.foto-botoes label.desativado { opacity: 0.6; cursor: progress; }
+.foto-estado { min-height: 1.2em; margin: 4px 0 8px; color: var(--texto-suave); font-size: 0.875rem; }
+.foto-campo > .campo-erro { margin: 4px 0 12px; }

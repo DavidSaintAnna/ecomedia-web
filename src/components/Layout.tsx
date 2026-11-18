@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../auth/auth-context';
 import { ServerStatus } from './ServerStatus';
@@ -6,21 +6,22 @@ import { ServerStatus } from './ServerStatus';
 export function Layout() {
   const { status, user, sessionError, retrySession, logout } = useAuth();
   const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const [saindo, setSaindo] = useState(false);
+  const { pathname, state } = useLocation();
 
   // Primeiro leva para o início, depois encerra a sessão. Na ordem inversa, uma tela que exige login
   // (como /conta) veria a sessão acabar antes da troca de página e mandaria a pessoa para /entrar.
+  // Quem navega para "/" com state { sair: true } (o botão Sair, ou a exclusão da conta) pede esse encerramento.
+  const saindo = (state as { sair?: boolean; aviso?: string } | null)?.sair === true;
+  const aviso = (state as { aviso?: string } | null)?.aviso;
   useEffect(() => {
     if (saindo && pathname === '/') {
       logout();
-      setSaindo(false);
+      navigate('/', { replace: true, state: aviso ? { aviso } : null });
     }
-  }, [saindo, pathname, logout]);
+  }, [saindo, aviso, pathname, logout, navigate]);
 
   function sair() {
-    setSaindo(true);
-    navigate('/');
+    navigate('/', { state: { sair: true } });
   }
 
   return (
@@ -38,6 +39,8 @@ export function Layout() {
               Início
             </NavLink>
             <NavLink to="/explorar">Explorar</NavLink>
+            <NavLink to="/ranking">Ranking</NavLink>
+            {user && <NavLink to="/feed">Feed</NavLink>}
             {status === 'ready' && !user && (
               <>
                 <NavLink to="/entrar">Entrar</NavLink>

@@ -1,7 +1,8 @@
 import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { reduzirImagem, type OpcoesDeReducao } from '../lib/imagem';
 import { api } from './client';
 import { patchPost } from './postCache';
-import type { Category, Comment, FollowResponse, LikeResponse, Paginated, Person, Post, Profile, Stats } from './types';
+import type { Category, Comment, FollowResponse, ImagemEnviada, LikeResponse, Paginated, Person, Post, Profile, RankingItem, Stats } from './types';
 
 export function useStats() {
   return useQuery({
@@ -167,6 +168,7 @@ export function useUpdatePost(id: number) {
       patchPost(queryClient, id, () => editado);
       // categoria e cidade podem ter mudado: as listas filtradas precisam ser buscadas de novo
       void queryClient.invalidateQueries({ queryKey: ['posts'] });
+      void queryClient.invalidateQueries({ queryKey: ['feed'] });
     },
   });
 }
@@ -179,6 +181,8 @@ export function useDeletePost(id: number) {
       queryClient.removeQueries({ queryKey: ['post', id] });
       queryClient.removeQueries({ queryKey: ['comments', id] });
       void queryClient.invalidateQueries({ queryKey: ['posts'] });
+      void queryClient.invalidateQueries({ queryKey: ['feed'] });
+      void queryClient.invalidateQueries({ queryKey: ['feed'] });
       void queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
   });
@@ -232,6 +236,54 @@ export function useToggleFollow(id: number, meuId: number | undefined) {
         void queryClient.invalidateQueries({ queryKey: ['profile', meuId] });
       }
       void queryClient.invalidateQueries({ queryKey: ['feed'] });
+    },
+  });
+}
+
+/** Publicações de quem eu sigo, as mais novas primeiro. */
+export function useFeed(page: number) {
+  return useQuery({
+    queryKey: ['feed', page],
+    queryFn: ({ signal }) => api.get<Paginated<Post>>('/api/feed', { query: { page, limit: 10 }, signal }),
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** Ranking de quem mais recebeu curtidas nas próprias publicações (a API devolve lista simples). */
+export function useRanking(city: string, limit: number) {
+  return useQuery({
+    queryKey: ['ranking', city, limit],
+    queryFn: ({ signal }) => api.get<RankingItem[]>('/api/leaderboard', { query: { city: city || undefined, limit }, signal }),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export interface EdicaoPerfil {
+  name?: string;
+  city?: string | null;
+  bio?: string | null;
+  avatarUrl?: string | null;
+}
+
+/** Editar o meu perfil. O que mudou (nome, foto) aparece em publicações, comentários e listas já baixados: baixa de novo. */
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (corpo: EdicaoPerfil) => api.patch<Profile>('/api/users/me', corpo),
+    onSuccess: () => queryClient.invalidateQueries(),
+  });
+}
+
+export function useDeleteAccount() {
+  return useMutation({ mutationFn: () => api.delete('/api/users/me') });
+}
+
+/** Reduz a foto no navegador e envia para a API. Devolve o link para usar em avatarUrl / imageUrl. */
+export function useEnviarFoto() {
+  return useMutation({
+    mutationFn: async ({ arquivo, opcoes }: { arquivo: File; opcoes: OpcoesDeReducao }) => {
+      const pequena = await reduzirImagem(arquivo, opcoes);
+      return api.upload<ImagemEnviada>('/api/images', pequena);
     },
   });
 }

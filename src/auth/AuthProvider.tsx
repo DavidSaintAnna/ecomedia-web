@@ -86,11 +86,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(() => encerrar(false), [encerrar]);
+  const updateUser = useCallback((dados: Partial<AuthUser>) => setUser((u) => (u ? { ...u, ...dados } : u)), []);
   const retrySession = useCallback(() => setTentativa((n) => n + 1), []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ status, user, sessionError, sessionExpired, login, register, logout, retrySession }),
-    [status, user, sessionError, sessionExpired, login, register, logout, retrySession],
+    () => ({ status, user, sessionError, sessionExpired, login, register, logout, updateUser, retrySession }),
+    [status, user, sessionError, sessionExpired, login, register, logout, updateUser, retrySession],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

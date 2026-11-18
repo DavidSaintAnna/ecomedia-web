@@ -104,3 +104,11 @@ export interface LikeResponse {
   liked: boolean;
   likesCount: number;
 }
+
+/** Resposta de POST /api/images: o `url` vai em avatarUrl ou imageUrl. */
+export interface ImagemEnviada {
+  id: number;
+  contentType: string;
+  size: number;
+  url: string;
+}

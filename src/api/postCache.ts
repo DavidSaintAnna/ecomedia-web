@@ -6,8 +6,10 @@ import type { Paginated, Post } from './types';
  * mudar na hora em qualquer tela. A resposta da API continua sendo a verdade: quem chama confirma depois.
  */
 export function patchPost(queryClient: QueryClient, id: number, mudar: (post: Post) => Post): void {
-  queryClient.setQueriesData<Paginated<Post>>({ queryKey: ['posts'] }, (lista) =>
-    lista ? { ...lista, data: lista.data.map((p) => (p.id === id ? mudar(p) : p)) } : lista,
-  );
+  for (const chave of ['posts', 'feed']) {
+    queryClient.setQueriesData<Paginated<Post>>({ queryKey: [chave] }, (lista) =>
+      lista ? { ...lista, data: lista.data.map((p) => (p.id === id ? mudar(p) : p)) } : lista,
+    );
+  }
   queryClient.setQueryData<Post>(['post', id], (post) => (post ? mudar(post) : post));
 }

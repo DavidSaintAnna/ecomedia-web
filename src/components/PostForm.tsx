@@ -5,6 +5,8 @@ import { useCategories } from '../api/hooks';
 import type { ValoresPost } from '../lib/postBody';
 import { useFocusOnError } from '../lib/useFocusOnError';
 import { POST_MAXIMO, POST_MINIMO, errosDaApi, validarPost, type Erros } from '../lib/validation';
+import { FOTO_DE_PUBLICACAO } from '../lib/imagem';
+import { EscolherFoto } from './EscolherFoto';
 import { Field } from './Field';
 import { TextArea } from './TextArea';
 
@@ -28,6 +30,7 @@ export function PostForm({ titulo, inicial, rotuloEnviar, rotuloEnviando, dicaCi
   const [erros, setErros] = useState<Erros>({});
   const [mensagem, setMensagem] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [enviandoFoto, setEnviandoFoto] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   useFocusOnError(formRef, erros, mensagem);
 
@@ -37,7 +40,7 @@ export function PostForm({ titulo, inicial, rotuloEnviar, rotuloEnviando, dicaCi
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
-    if (enviando) return;
+    if (enviando || enviandoFoto) return;
     const locais = validarPost(valores);
     setMensagem(null);
     setErros(locais);
@@ -113,16 +116,16 @@ export function PostForm({ titulo, inicial, rotuloEnviar, rotuloEnviando, dicaCi
           contador={{ atual: valores.content.length, maximo: POST_MAXIMO, minimo: POST_MINIMO }}
         />
 
-        <Field
-          label="Link de uma imagem (opcional)"
-          hint="Cole o endereço de uma foto que já está na internet, começando com https://"
-          type="url"
+        <EscolherFoto
           name="imageUrl"
-          inputMode="url"
-          autoComplete="off"
-          value={valores.imageUrl}
-          onChange={(e) => mudar('imageUrl', e.target.value)}
-          error={erros.imageUrl}
+          rotuloLink="Link de uma imagem (opcional)"
+          dicaLink="Ou cole o endereço de uma foto que já está na internet, começando com https://"
+          rotuloBotao="Escolher foto do computador"
+          reducao={FOTO_DE_PUBLICACAO}
+          valor={valores.imageUrl}
+          onChange={(link) => mudar('imageUrl', link)}
+          onOcupado={setEnviandoFoto}
+          erro={erros.imageUrl}
         />
 
         <Field
@@ -136,7 +139,7 @@ export function PostForm({ titulo, inicial, rotuloEnviar, rotuloEnviando, dicaCi
         />
 
         <div className="acoes-form">
-          <button type="submit" className="btn" disabled={enviando}>
+          <button type="submit" className="btn" disabled={enviando || enviandoFoto}>
             {enviando ? rotuloEnviando : rotuloEnviar}
           </button>
           <Link to={voltarPara} className="btn btn-claro">

@@ -48,7 +48,7 @@ export function mockApi(rotas: Record<string, Rota> = {}) {
         method: init?.method ?? 'GET',
         path: url.pathname,
         query: url.searchParams,
-        body: init?.body ? JSON.parse(String(init.body)) : undefined,
+        body: init?.body instanceof Blob ? init.body : init?.body ? JSON.parse(String(init.body)) : undefined,
         headers: (init?.headers ?? {}) as Record<string, string>,
       };
       chamadas.push(chamada);
