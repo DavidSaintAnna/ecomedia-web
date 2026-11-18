@@ -107,6 +107,14 @@ export function useAddComment(postId: number) {
   });
 }
 
+export function useEditComment(postId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, content }: { id: number; content: string }) => api.patch<Comment>(`/api/comments/${id}`, { content }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['comments', postId] }),
+  });
+}
+
 export function useDeleteComment(postId: number) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -119,6 +127,57 @@ export function useDeleteComment(postId: number) {
       // por exemplo 404: o comentário já tinha sido apagado; a lista se corrige sozinha
       await queryClient.invalidateQueries({ queryKey: ['comments', postId] });
       await queryClient.invalidateQueries({ queryKey: ['post', postId] });
+    },
+  });
+}
+
+export interface NovoPost {
+  categoryId: number;
+  content: string;
+  imageUrl?: string;
+  city?: string;
+}
+
+export interface EdicaoPost {
+  categoryId?: number;
+  content?: string;
+  imageUrl?: string | null;
+  city?: string | null;
+}
+
+export function useCreatePost() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (corpo: NovoPost) => api.post<Post>('/api/posts', corpo),
+    onSuccess: async (criado) => {
+      queryClient.setQueryData(['post', criado.id], criado);
+      await queryClient.invalidateQueries({ queryKey: ['posts'] }); // o novo post entra no topo do Explorar
+      void queryClient.invalidateQueries({ queryKey: ['stats'] });
+    },
+  });
+}
+
+export function useUpdatePost(id: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (corpo: EdicaoPost) => api.patch<Post>(`/api/posts/${id}`, corpo),
+    onSuccess: (editado) => {
+      patchPost(queryClient, id, () => editado);
+      // categoria e cidade podem ter mudado: as listas filtradas precisam ser buscadas de novo
+      void queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
+  });
+}
+
+export function useDeletePost(id: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.delete(`/api/posts/${id}`),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['post', id] });
+      queryClient.removeQueries({ queryKey: ['comments', id] });
+      void queryClient.invalidateQueries({ queryKey: ['posts'] });
+      void queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
   });
 }

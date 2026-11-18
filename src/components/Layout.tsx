@@ -48,6 +48,9 @@ export function Layout() {
             )}
             {user && (
               <>
+                <NavLink to="/posts/novo" className="nav-destaque">
+                  Publicar
+                </NavLink>
                 <NavLink to="/conta">{user.name.split(' ')[0]}</NavLink>
                 <button type="button" className="nav-botao" onClick={sair}>
                   Sair

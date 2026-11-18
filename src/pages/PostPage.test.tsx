@@ -9,7 +9,7 @@ afterEach(() => vi.unstubAllGlobals());
 const ADMIN = { ...USUARIA, id: 1, name: 'Admin EcoMedia', role: 'ADMIN' };
 
 function comentario(id: number, autorId: number, nome: string, content: string): Comment {
-  return { id, postId: 5, content, createdAt: '2026-01-05T16:00:00.000Z', author: { id: autorId, name: nome, avatarUrl: null } };
+  return { id, postId: 5, content, createdAt: '2026-01-05T16:00:00.000Z', editedAt: null, author: { id: autorId, name: nome, avatarUrl: null } };
 }
 
 interface Opcoes {
@@ -54,6 +54,12 @@ function servidor({ usuaria = USUARIA, postInicial, comentarios }: Opcoes = {}) 
     },
   };
   for (const c of estado.comentarios) {
+    rotas[`PATCH /api/comments/${c.id}`] = ({ body }) => {
+      const atual = estado.comentarios.find((x) => x.id === c.id)!;
+      atual.content = (body as { content: string }).content;
+      atual.editedAt = '2026-01-06T10:00:00.000Z';
+      return json(atual);
+    };
     rotas[`DELETE /api/comments/${c.id}`] = () => {
       estado.comentarios = estado.comentarios.filter((x) => x.id !== c.id);
       return new Response(null, { status: 204 });
@@ -221,7 +227,7 @@ describe('Comentar', () => {
     renderApp('/posts/5');
 
     await userEvent.type(await screen.findByLabelText('Escreva um comentário'), '  Muito bom!  ');
-    expect(screen.getByText('14/500')).toBeInTheDocument();
+    expect(screen.getByText('14/500 · mínimo 10')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Comentar' }));
 
     expect(await screen.findByText('Muito bom!')).toBeInTheDocument();
@@ -244,6 +250,22 @@ describe('Comentar', () => {
     expect(chamadas.some((c) => c.method === 'POST' && c.path.endsWith('/comments'))).toBe(false);
   });
 
+  it('comentário com menos de 10 caracteres é recusado no campo, sem chamar a API', async () => {
+    const { chamadas } = servidor();
+    renderApp('/posts/5');
+
+    await userEvent.type(await screen.findByLabelText('Escreva um comentário'), '  Parabéns!  ');
+    await userEvent.click(screen.getByRole('button', { name: 'Comentar' }));
+
+    expect(screen.getByText('O comentário precisa ter pelo menos 10 caracteres.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Escreva um comentário')).toHaveAttribute('aria-invalid', 'true');
+    expect(chamadas.some((c) => c.method === 'POST' && c.path.endsWith('/comments'))).toBe(false);
+
+    await userEvent.type(screen.getByLabelText('Escreva um comentário'), ' Muito!');
+    await userEvent.click(screen.getByRole('button', { name: 'Comentar' }));
+    expect(await screen.findByText('Parabéns! Muito!')).toBeInTheDocument();
+  });
+
   it('mostra o erro da API no campo', async () => {
     servidor();
     const fetchAntigo = globalThis.fetch;
@@ -257,7 +279,7 @@ describe('Comentar', () => {
     );
     renderApp('/posts/5');
 
-    await userEvent.type(await screen.findByLabelText('Escreva um comentário'), 'oi');
+    await userEvent.type(await screen.findByLabelText('Escreva um comentário'), 'Um comentário válido');
     await userEvent.click(screen.getByRole('button', { name: 'Comentar' }));
 
     expect(await screen.findByText('Texto longo demais')).toBeInTheDocument();
@@ -287,6 +309,109 @@ describe('Comentar', () => {
     expect(await screen.findByText('Comentário 25')).toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(25);
     expect(screen.queryByRole('button', { name: 'Carregar mais comentários' })).not.toBeInTheDocument();
+  });
+});
+
+describe('Editar comentário', () => {
+  it('só o autor vê Editar; o admin só vê Excluir', async () => {
+    servidor();
+    renderApp('/posts/5');
+    const meu = (await screen.findByText('Também faço isso!')).closest('li')!;
+    const deOutra = screen.getByText('Parabéns pela ideia.').closest('li')!;
+    expect(within(meu).getByRole('button', { name: 'Editar' })).toBeInTheDocument();
+    expect(within(deOutra).queryByRole('button', { name: 'Editar' })).not.toBeInTheDocument();
+  });
+
+  it('o admin não pode editar comentário de ninguém', async () => {
+    servidor({ usuaria: ADMIN });
+    renderApp('/posts/5');
+    await screen.findByText('Também faço isso!');
+    expect(screen.queryByRole('button', { name: 'Editar' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Excluir' })).toHaveLength(2);
+  });
+
+  it('visitante não vê Editar', async () => {
+    servidor({ usuaria: null });
+    renderApp('/posts/5');
+    await screen.findByText('Também faço isso!');
+    expect(screen.queryByRole('button', { name: 'Editar' })).not.toBeInTheDocument();
+  });
+
+  it('abre o campo com o texto atual, salva, mostra o texto novo e a marca "editado"', async () => {
+    const { chamadas } = servidor();
+    renderApp('/posts/5');
+    const meu = (await screen.findByText('Também faço isso!')).closest('li')!;
+    await userEvent.click(within(meu).getByRole('button', { name: 'Editar' }));
+
+    const campo = within(meu).getByLabelText('Editar comentário');
+    expect(campo).toHaveValue('Também faço isso!');
+    await userEvent.clear(campo);
+    await userEvent.type(campo, '  Também faço isso, e recomendo!  ');
+    await userEvent.click(within(meu).getByRole('button', { name: 'Salvar' }));
+
+    expect(await screen.findByText('Também faço isso, e recomendo!')).toBeInTheDocument();
+    const item = screen.getByText('Também faço isso, e recomendo!').closest('li')!;
+    expect(within(item).getByText(/editado/)).toBeInTheDocument();
+    expect(within(item).queryByLabelText('Editar comentário')).not.toBeInTheDocument();
+    expect(chamadas.find((c) => c.method === 'PATCH')).toMatchObject({ path: '/api/comments/101', body: { content: 'Também faço isso, e recomendo!' } });
+  });
+
+  it('menos de 10 caracteres é recusado no campo, sem chamar a API', async () => {
+    const { chamadas } = servidor();
+    renderApp('/posts/5');
+    const meu = (await screen.findByText('Também faço isso!')).closest('li')!;
+    await userEvent.click(within(meu).getByRole('button', { name: 'Editar' }));
+    const campo = within(meu).getByLabelText('Editar comentário');
+    await userEvent.clear(campo);
+    await userEvent.type(campo, 'Curto');
+    await userEvent.click(within(meu).getByRole('button', { name: 'Salvar' }));
+
+    expect(within(meu).getByText('O comentário precisa ter pelo menos 10 caracteres.')).toBeInTheDocument();
+    expect(campo).toHaveAttribute('aria-invalid', 'true');
+    expect(chamadas.some((c) => c.method === 'PATCH')).toBe(false);
+  });
+
+  it('salvar sem mudar o texto só fecha, sem chamar a API', async () => {
+    const { chamadas } = servidor();
+    renderApp('/posts/5');
+    const meu = (await screen.findByText('Também faço isso!')).closest('li')!;
+    await userEvent.click(within(meu).getByRole('button', { name: 'Editar' }));
+    await userEvent.click(within(meu).getByRole('button', { name: 'Salvar' }));
+
+    expect(within(meu).queryByLabelText('Editar comentário')).not.toBeInTheDocument();
+    expect(screen.getByText('Também faço isso!')).toBeInTheDocument();
+    expect(chamadas.some((c) => c.method === 'PATCH')).toBe(false);
+  });
+
+  it('Cancelar desiste e mantém o texto antigo', async () => {
+    const { chamadas } = servidor();
+    renderApp('/posts/5');
+    const meu = (await screen.findByText('Também faço isso!')).closest('li')!;
+    await userEvent.click(within(meu).getByRole('button', { name: 'Editar' }));
+    await userEvent.type(within(meu).getByLabelText('Editar comentário'), ' e mais um pouco');
+    await userEvent.click(within(meu).getByRole('button', { name: 'Cancelar' }));
+
+    expect(screen.getByText('Também faço isso!')).toBeInTheDocument();
+    expect(chamadas.some((c) => c.method === 'PATCH')).toBe(false);
+  });
+
+  it('mostra o erro da API (por exemplo 403) e continua editando', async () => {
+    servidor();
+    const fetchAntigo = globalThis.fetch;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) =>
+        init?.method === 'PATCH' ? json({ error: 'Forbidden', message: 'Você só pode editar os seus próprios comentários' }, 403) : fetchAntigo(url, init),
+      ),
+    );
+    renderApp('/posts/5');
+    const meu = (await screen.findByText('Também faço isso!')).closest('li')!;
+    await userEvent.click(within(meu).getByRole('button', { name: 'Editar' }));
+    await userEvent.type(within(meu).getByLabelText('Editar comentário'), ' de verdade');
+    await userEvent.click(within(meu).getByRole('button', { name: 'Salvar' }));
+
+    expect(await within(meu).findByText('Você só pode editar os seus próprios comentários')).toBeInTheDocument();
+    expect(within(meu).getByLabelText('Editar comentário')).toBeInTheDocument();
   });
 });
 

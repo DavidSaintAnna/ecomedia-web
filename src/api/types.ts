@@ -46,6 +46,8 @@ export interface Comment {
   postId: number;
   content: string;
   createdAt: string;
+  /** Quando foi editado pela última vez; null se nunca foi. */
+  editedAt: string | null;
   author: Author;
 }
 

@@ -1,5 +1,5 @@
 import { ApiError } from '../api/client';
-import { errosDaApi, validarCadastro, validarEntrada } from './validation';
+import { errosDaApi, validarCadastro, validarEntrada, validarComentario, validarPost } from './validation';
 
 describe('validarCadastro', () => {
   const ok = { name: 'Maria Souza', email: 'maria@exemplo.com', password: '12345678', city: '' };
@@ -39,5 +39,55 @@ describe('errosDaApi', () => {
   it('leva o 409 de e-mail repetido para o campo e-mail', () => {
     const erro = new ApiError(409, 'Conflict', 'E-mail já cadastrado');
     expect(errosDaApi(erro, ['name', 'email'])).toEqual({ email: 'E-mail já cadastrado' });
+  });
+});
+
+describe('validarPost', () => {
+  const ok = { categoryId: '1', content: 'Plantamos uma horta', imageUrl: '', city: '' };
+
+  it('aceita o mínimo: categoria e texto', () => {
+    expect(validarPost(ok)).toEqual({});
+  });
+
+  it('exige categoria e texto com pelo menos 3 caracteres', () => {
+    expect(validarPost({ ...ok, categoryId: '', content: ' ab ' })).toEqual({
+      categoryId: 'Escolha uma categoria.',
+      content: 'A publicação precisa ter pelo menos 10 caracteres.',
+    });
+  });
+
+  it('pede no mínimo 10 caracteres, sem contar espaços nas pontas', () => {
+    expect(validarPost({ ...ok, content: '  Reciclei!  ' }).content).toBe('A publicação precisa ter pelo menos 10 caracteres.');
+    expect(validarPost({ ...ok, content: '123456789' }).content).toMatch(/pelo menos 10/);
+    expect(validarPost({ ...ok, content: '  1234567890  ' })).toEqual({});
+  });
+
+  it('limita o texto a 1000 caracteres', () => {
+    expect(validarPost({ ...ok, content: 'a'.repeat(1001) }).content).toMatch(/no máximo 1000/);
+    expect(validarPost({ ...ok, content: 'a'.repeat(1000) })).toEqual({});
+  });
+
+  it('só aceita link http ou https na imagem', () => {
+    expect(validarPost({ ...ok, imageUrl: 'https://x.com/a.png' })).toEqual({});
+    expect(validarPost({ ...ok, imageUrl: 'http://x.com/a.png' })).toEqual({});
+    expect(validarPost({ ...ok, imageUrl: 'abc' }).imageUrl).toMatch(/link válido/);
+    expect(validarPost({ ...ok, imageUrl: 'ftp://x.com/a.png' }).imageUrl).toMatch(/link válido/);
+    expect(validarPost({ ...ok, imageUrl: `https://x.com/${'a'.repeat(500)}` }).imageUrl).toMatch(/500/);
+  });
+
+  it('cidade com até 100 letras', () => {
+    expect(validarPost({ ...ok, city: 'a'.repeat(101) }).city).toMatch(/100/);
+  });
+});
+
+describe('validarComentario', () => {
+  it('exige de 10 a 500 caracteres, sem contar espaços nas pontas', () => {
+    expect(validarComentario('')).toBe('Escreva alguma coisa antes de enviar.');
+    expect(validarComentario('   ')).toBe('Escreva alguma coisa antes de enviar.');
+    expect(validarComentario('  Parabéns!  ')).toBe('O comentário precisa ter pelo menos 10 caracteres.');
+    expect(validarComentario('123456789')).toMatch(/pelo menos 10/);
+    expect(validarComentario('1234567890')).toBeUndefined();
+    expect(validarComentario('a'.repeat(500))).toBeUndefined();
+    expect(validarComentario('a'.repeat(501))).toBe('O comentário pode ter no máximo 500 caracteres.');
   });
 });

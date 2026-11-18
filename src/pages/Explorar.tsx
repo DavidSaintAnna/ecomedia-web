@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { useCategories, usePosts } from '../api/hooks';
 import { FiltrosPosts } from '../components/FiltrosPosts';
 import { Paginacao } from '../components/Paginacao';
@@ -11,6 +11,16 @@ const POR_PAGINA = 10;
 
 export function Explorar() {
   const [params, setParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  // Aviso vindo de outra tela (por exemplo "Publicação excluída."). Guardado em estado e tirado do histórico,
+  // para não reaparecer ao atualizar a página.
+  const [aviso, setAviso] = useState(() => (location.state as { aviso?: string } | null)?.aviso);
+  useEffect(() => {
+    if (aviso) navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
+    // roda só uma vez, ao abrir a tela
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const filtros = lerFiltros(params);
   const categorias = useCategories();
   const posts = usePosts({
@@ -36,6 +46,12 @@ export function Explorar() {
   return (
     <>
       <h1>Explorar publicações</h1>
+
+      {aviso && (
+        <p role="status" className="aviso">
+          {aviso}
+        </p>
+      )}
 
       <FiltrosPosts
         key={chaveFiltros}
@@ -71,7 +87,7 @@ export function Explorar() {
           <>
             <div className={posts.isPlaceholderData ? 'lista-posts carregando' : 'lista-posts'}>
               {resposta.data.map((post) => (
-                <PostCard key={post.id} post={post} />
+                <PostCard key={post.id} post={post} aoExcluir={() => setAviso('Publicação excluída.')} />
               ))}
             </div>
             {resposta.meta.totalPages > 1 && <Paginacao filtros={filtros} totalPages={resposta.meta.totalPages} />}

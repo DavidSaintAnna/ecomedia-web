@@ -47,3 +47,50 @@ export function errosDaApi(erro: ApiError, campos: string[]): Erros {
   if (erro.status === 409 && campos.includes('email')) resultado.email = erro.message;
   return resultado;
 }
+
+export const COMENTARIO_MINIMO = 10;
+export const COMENTARIO_MAXIMO = 500;
+
+/** Mesma regra da API: de 10 a 500 caracteres, sem contar espaços nas pontas. */
+export function validarComentario(texto: string): string | undefined {
+  const t = texto.trim();
+  if (!t) return 'Escreva alguma coisa antes de enviar.';
+  if (t.length < COMENTARIO_MINIMO) return `O comentário precisa ter pelo menos ${COMENTARIO_MINIMO} caracteres.`;
+  if (t.length > COMENTARIO_MAXIMO) return `O comentário pode ter no máximo ${COMENTARIO_MAXIMO} caracteres.`;
+  return undefined;
+}
+
+function linkValido(texto: string): boolean {
+  try {
+    const url = new URL(texto);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+export const POST_MINIMO = 10;
+export const POST_MAXIMO = 1000;
+
+// As mesmas regras da API: categoria obrigatória, texto de 10 a 1000, imagem (opcional) com link http(s) de até 500, cidade até 100.
+export function validarPost(v: { categoryId: string; content: string; imageUrl: string; city: string }): Erros {
+  const texto = v.content.trim();
+  const imagem = v.imageUrl.trim();
+  return limpar({
+    categoryId: v.categoryId ? undefined : 'Escolha uma categoria.',
+    content:
+      texto.length < POST_MINIMO
+        ? `A publicação precisa ter pelo menos ${POST_MINIMO} caracteres.`
+        : texto.length > POST_MAXIMO
+          ? `A publicação pode ter no máximo ${POST_MAXIMO} caracteres.`
+          : undefined,
+    imageUrl: !imagem
+      ? undefined
+      : imagem.length > 500
+        ? 'O link da imagem pode ter no máximo 500 caracteres.'
+        : !linkValido(imagem)
+          ? 'Digite um link válido, começando com http:// ou https://.'
+          : undefined,
+    city: v.city.trim().length > 100 ? 'A cidade pode ter no máximo 100 letras.' : undefined,
+  });
+}

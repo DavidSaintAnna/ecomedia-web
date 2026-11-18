@@ -1,23 +1,57 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation } from 'react-router';
-import { useAddComment, useComments, useDeleteComment } from '../api/hooks';
+import { useAddComment, useComments, useDeleteComment, useEditComment } from '../api/hooks';
 import { ApiError } from '../api/client';
 import type { Comment, Post } from '../api/types';
 import { useAuth } from '../auth/auth-context';
 import { dataBR, quando } from '../lib/dates';
 import { plural } from '../lib/format';
 import { useFocusOnError } from '../lib/useFocusOnError';
-import { errosDaApi } from '../lib/validation';
+import { COMENTARIO_MAXIMO, COMENTARIO_MINIMO, errosDaApi, validarComentario } from '../lib/validation';
 import { Avatar } from './Avatar';
 import { TextArea } from './TextArea';
-
-const MAXIMO = 500;
 
 function ComentarioItem({ comentario, postId }: { comentario: Comment; postId: number }) {
   const { user } = useAuth();
   const excluir = useDeleteComment(postId);
+  const editar = useEditComment(postId);
   const [confirmando, setConfirmando] = useState(false);
-  const pode = user && (user.role === 'ADMIN' || user.id === comentario.author.id);
+  const [editando, setEditando] = useState(false);
+  const [texto, setTexto] = useState(comentario.content);
+  const [erro, setErro] = useState<string | undefined>();
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusOnError(formRef, erro ? { content: erro } : {}, null);
+  const doAutor = !!user && user.id === comentario.author.id;
+  const pode = !!user && (user.role === 'ADMIN' || doAutor); // excluir: autor ou admin
+  // editar: só o autor (o admin pode excluir, mas não reescrever o que outra pessoa disse)
+
+  function comecarEdicao() {
+    setTexto(comentario.content);
+    setErro(undefined);
+    editar.reset();
+    setConfirmando(false);
+    setEditando(true);
+  }
+
+  function salvar(evento: FormEvent) {
+    evento.preventDefault();
+    if (editar.isPending) return;
+    const problema = validarComentario(texto);
+    if (problema) return setErro(problema);
+    const novo = texto.trim();
+    if (novo === comentario.content) return setEditando(false); // nada mudou: não precisa chamar a API
+    setErro(undefined);
+    editar.mutate(
+      { id: comentario.id, content: novo },
+      {
+        onSuccess: () => setEditando(false),
+        onError: (e) => {
+          const porCampo = e instanceof ApiError ? errosDaApi(e, ['content']) : {};
+          setErro(porCampo.content ?? (e instanceof Error ? e.message : 'Não foi possível salvar.'));
+        },
+      },
+    );
+  }
 
   return (
     <li className="comentario">
@@ -28,15 +62,51 @@ function ComentarioItem({ comentario, postId }: { comentario: Comment; postId: n
           <time dateTime={comentario.createdAt} title={dataBR(comentario.createdAt)}>
             {quando(comentario.createdAt)}
           </time>
+          {comentario.editedAt && (
+            <span title={`Editado em ${dataBR(comentario.editedAt)}`}> · editado</span>
+          )}
         </p>
-        <p className="comentario-texto">{comentario.content}</p>
 
-        {pode && !confirmando && (
-          <button type="button" className="link-botao" onClick={() => setConfirmando(true)}>
-            Excluir
-          </button>
+        {!editando && <p className="comentario-texto">{comentario.content}</p>}
+
+        {editando && (
+          <form ref={formRef} onSubmit={salvar} noValidate className="editar-comentario">
+            <TextArea
+              label="Editar comentário"
+              name="content"
+              value={texto}
+              onChange={(e) => {
+                setTexto(e.target.value);
+                setErro(undefined);
+              }}
+              error={erro}
+              contador={{ atual: texto.length, maximo: COMENTARIO_MAXIMO, minimo: COMENTARIO_MINIMO }}
+              autoFocus
+            />
+            <button type="submit" className="btn btn-pequeno" disabled={editar.isPending}>
+              {editar.isPending ? 'Salvando…' : 'Salvar'}
+            </button>{' '}
+            <button type="button" className="btn btn-claro btn-pequeno" disabled={editar.isPending} onClick={() => setEditando(false)}>
+              Cancelar
+            </button>
+          </form>
         )}
-        {pode && confirmando && (
+
+        {!editando && !confirmando && (
+          <span className="acoes-comentario">
+            {doAutor && (
+              <button type="button" className="link-botao" onClick={comecarEdicao}>
+                Editar
+              </button>
+            )}
+            {pode && (
+              <button type="button" className="link-botao" onClick={() => setConfirmando(true)}>
+                Excluir
+              </button>
+            )}
+          </span>
+        )}
+        {!editando && pode && confirmando && (
           <span className="confirmar" role="group" aria-label="Confirmar exclusão do comentário">
             Excluir este comentário?{' '}
             <button
@@ -75,8 +145,8 @@ function NovoComentario({ postId }: { postId: number }) {
     if (adicionar.isPending) return;
     const conteudo = texto.trim();
     setPublicado(false);
-    if (!conteudo) return setErro('Escreva alguma coisa antes de enviar.');
-    if (conteudo.length > MAXIMO) return setErro(`O comentário pode ter no máximo ${MAXIMO} caracteres.`);
+    const problema = validarComentario(texto);
+    if (problema) return setErro(problema);
     setErro(undefined);
     adicionar.mutate(conteudo, {
       onSuccess: () => {
@@ -96,9 +166,12 @@ function NovoComentario({ postId }: { postId: number }) {
         label="Escreva um comentário"
         name="content"
         value={texto}
-        onChange={(e) => setTexto(e.target.value)}
+        onChange={(e) => {
+          setTexto(e.target.value);
+          setErro(undefined);
+        }}
         error={erro}
-        contador={{ atual: texto.length, maximo: MAXIMO }}
+        contador={{ atual: texto.length, maximo: COMENTARIO_MAXIMO, minimo: COMENTARIO_MINIMO }}
       />
       <button type="submit" className="btn" disabled={adicionar.isPending}>
         {adicionar.isPending ? 'Enviando…' : 'Comentar'}

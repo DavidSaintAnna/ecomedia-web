@@ -203,3 +203,18 @@ nav { gap: 12px; flex-wrap: wrap; }
 .campo-contador { color: var(--texto-suave); font-size: 0.8125rem; margin-top: 4px; }
 .sucesso { color: var(--verde-900); font-weight: 600; margin: 8px 0 0; }
 .convite { background: #fff; border: 1px dashed var(--borda); border-radius: var(--raio); padding: 16px; text-align: center; }
+
+/* Publicar e editar */
+.cartao-form-largo { max-width: 620px; }
+.acoes-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.aviso-compacto { margin-top: 8px; padding: 10px 12px; }
+.acoes-post { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+.acoes-post .confirmar { display: block; background: var(--erro-fundo); border: 1px solid var(--erro); border-radius: var(--raio); padding: 12px; }
+.acoes-post .confirmar p { margin: 0 0 8px; }
+.btn-perigo { color: var(--erro); border-color: var(--erro); }
+.btn-perigo:hover { background: var(--erro-fundo); }
+.btn-perigo-cheio { background: var(--erro); }
+.btn-perigo-cheio:hover { background: #7f1d1d; }
+.campo select[aria-invalid='true'] { border-color: var(--erro); border-width: 2px; }
+.acoes-comentario { display: inline-flex; gap: 12px; }
+.editar-comentario { margin-top: 4px; }

@@ -4,7 +4,7 @@ interface TextAreaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>
   label: string;
   error?: string;
   /** Mostra "12/500" embaixo do campo. */
-  contador?: { atual: number; maximo: number };
+  contador?: { atual: number; maximo: number; minimo?: number };
 }
 
 export function TextArea({ label, error, contador, ...campo }: TextAreaProps) {
@@ -25,6 +25,7 @@ export function TextArea({ label, error, contador, ...campo }: TextAreaProps) {
         {contador && (
           <span className="campo-contador">
             {contador.atual}/{contador.maximo}
+            {contador.minimo ? ` · mínimo ${contador.minimo}` : ''}
           </span>
         )}
       </div>
