@@ -172,3 +172,34 @@ nav { gap: 12px; flex-wrap: wrap; }
   .filtros-acoes { grid-column: 1 / -1; }
   .lista-posts { grid-template-columns: 1fr 1fr; align-items: start; }
 }
+
+/* Curtir */
+.curtir-grupo { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.curtir { font: inherit; display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--borda); background: #fff; color: var(--texto); cursor: pointer; text-decoration: none; }
+.curtir:hover { background: var(--verde-100); }
+.curtir.curtido { background: var(--verde-100); border-color: var(--verde-700); color: var(--verde-900); font-weight: 600; }
+.curtir:disabled { opacity: 0.6; cursor: wait; }
+.curtir-erro { color: var(--erro); font-size: 0.8125rem; }
+.post-rodape a { color: inherit; }
+
+/* Comentários */
+.comentarios { margin-top: 24px; }
+.comentarios h2 { font-size: 1.125rem; margin: 0 0 12px; }
+.lista-comentarios { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 12px; }
+.comentario { display: flex; gap: 12px; background: #fff; border: 1px solid var(--borda); border-radius: var(--raio); padding: 12px; }
+.comentario-corpo { min-width: 0; flex: 1; }
+.comentario-corpo p { margin: 0; }
+.comentario-autor { font-size: 0.9375rem; }
+.comentario-autor time { color: var(--texto-suave); font-size: 0.8125rem; }
+.comentario-texto { white-space: pre-line; overflow-wrap: anywhere; }
+.link-botao { font: inherit; font-size: 0.875rem; background: none; border: 0; padding: 4px 0; color: var(--verde-700); text-decoration: underline; cursor: pointer; }
+.link-botao.perigo { color: var(--erro); font-weight: 600; }
+.confirmar { display: inline-block; font-size: 0.875rem; }
+.dica-vazio { color: var(--texto-suave); }
+.novo-comentario { background: #fff; border: 1px solid var(--borda); border-radius: var(--raio); padding: 16px; margin-top: 16px; }
+.campo textarea { width: 100%; font: inherit; padding: 10px 12px; border: 1px solid #9db3a4; border-radius: 8px; background: #fff; color: var(--texto); resize: vertical; }
+.campo textarea[aria-invalid='true'] { border-color: var(--erro); border-width: 2px; }
+.campo-rodape { display: flex; justify-content: space-between; gap: 12px; }
+.campo-contador { color: var(--texto-suave); font-size: 0.8125rem; margin-top: 4px; }
+.sucesso { color: var(--verde-900); font-weight: 600; margin: 8px 0 0; }
+.convite { background: #fff; border: 1px dashed var(--borda); border-radius: var(--raio); padding: 16px; text-align: center; }

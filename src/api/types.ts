@@ -92,3 +92,8 @@ export interface RankingItem extends Person {
   postsCount: number;
   likesReceived: number;
 }
+
+export interface LikeResponse {
+  liked: boolean;
+  likesCount: number;
+}

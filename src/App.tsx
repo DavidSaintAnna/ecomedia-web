@@ -7,6 +7,7 @@ import { Entrar } from './pages/Entrar';
 import { Explorar } from './pages/Explorar';
 import { Home } from './pages/Home';
 import { NotFound } from './pages/NotFound';
+import { PostPage } from './pages/PostPage';
 
 export function App() {
   return (
@@ -14,6 +15,7 @@ export function App() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="explorar" element={<Explorar />} />
+        <Route path="posts/:id" element={<PostPage />} />
         <Route path="entrar" element={<Entrar />} />
         <Route path="cadastro" element={<Cadastro />} />
         <Route element={<RequireAuth />}>
