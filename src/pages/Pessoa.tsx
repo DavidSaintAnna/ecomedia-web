@@ -27,7 +27,7 @@ function lerPagina(valor: string | null): number {
 
 function NaoEncontrada() {
   return (
-    <section className="hero">
+    <section className="pagina-mensagem">
       <h1>Pessoa não encontrada</h1>
       <p>Esta conta pode ter sido excluída, ou o endereço está errado.</p>
       <Link to="/explorar" className="btn">

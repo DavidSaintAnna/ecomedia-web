@@ -30,7 +30,7 @@ describe('Administrador exclui a conta de outra pessoa', () => {
   it('pede confirmação, exclui, volta para Explorar e avisa', async () => {
     const chamadas = servidor();
     renderApp('/pessoas/20');
-    await userEvent.click(await screen.findByRole('button', { name: 'Excluir a conta de Ana Souza' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Excluir esta conta de Ana Souza' }));
     expect(screen.getByRole('group', { name: 'Confirmar exclusão da conta de Ana Souza' })).toHaveTextContent('As 2 publicações de Ana Souza serão apagadas');
     expect(chamadas.some((c) => c.method === 'DELETE')).toBe(false);
 
@@ -44,17 +44,17 @@ describe('Administrador exclui a conta de outra pessoa', () => {
   it('"Cancelar" desiste sem chamar a API', async () => {
     const chamadas = servidor();
     renderApp('/pessoas/20');
-    await userEvent.click(await screen.findByRole('button', { name: 'Excluir a conta de Ana Souza' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Excluir esta conta de Ana Souza' }));
     await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
     expect(screen.queryByRole('group', { name: /Confirmar exclusão/ })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Excluir a conta de Ana Souza' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Excluir esta conta de Ana Souza' })).toBeInTheDocument();
     expect(chamadas.some((c) => c.method === 'DELETE')).toBe(false);
   });
 
   it('se a API recusar (por exemplo, a conta é de outro administrador), mostra a mensagem e continua na página', async () => {
     servidor({ excluir: () => json({ error: 'Forbidden', message: 'A conta de outro administrador não pode ser excluída por aqui' }, 403) });
     renderApp('/pessoas/20');
-    await userEvent.click(await screen.findByRole('button', { name: 'Excluir a conta de Ana Souza' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Excluir esta conta de Ana Souza' }));
     await userEvent.click(screen.getByRole('button', { name: 'Sim, excluir a conta' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('A conta de outro administrador não pode ser excluída por aqui');
     expect(screen.getByRole('heading', { level: 1, name: 'Ana Souza' })).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe('Administrador exclui a conta de outra pessoa', () => {
   ])('o texto da confirmação concorda com o número de publicações (%i)', async (quantas, texto) => {
     servidor({ perfil: { ...ANA, postsCount: quantas } });
     renderApp('/pessoas/20');
-    await userEvent.click(await screen.findByRole('button', { name: 'Excluir a conta de Ana Souza' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Excluir esta conta de Ana Souza' }));
     expect(screen.getByRole('group', { name: /Confirmar exclusão/ })).toHaveTextContent(texto);
   });
 

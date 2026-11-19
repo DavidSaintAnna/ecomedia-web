@@ -30,7 +30,7 @@ export function EditarPost() {
   const original = post.data;
   if (!podeGerenciarPost(user, original)) {
     return (
-      <section className="hero">
+      <section className="pagina-mensagem">
         <h1>Editar publicação</h1>
         <p role="alert">Você só pode editar as suas próprias publicações.</p>
         <Link to={`/posts/${original.id}`} className="btn">

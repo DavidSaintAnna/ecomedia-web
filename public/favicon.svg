@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="EcoMedia">
-  <rect width="64" height="64" rx="14" fill="#15803d"/>
-  <path d="M46 16C26 16 16 27 16 40c0 3 .6 5.600 1.600 7.800C20 40 26 33 36 28c-8 6-13 12-15 21 2 .6 4 1 6 1 14 0 21-12 19-34z" fill="#f0fdf4"/>
+  <rect width="64" height="64" rx="18" fill="#0b3d2e"/>
+  <path d="M32 50V31" stroke="#c6f135" stroke-width="4.2" stroke-linecap="round" fill="none"/>
+  <path d="M32 34.500C32 25 25 19.500 14.500 19.500c0 9.800 6.400 15 17.500 15Z" fill="#c6f135"/>
+  <path d="M32 29.500C32 20 39 13 50 13c0 11.200-7 16.500-18 16.500Z" fill="#c6f135"/>
 </svg>

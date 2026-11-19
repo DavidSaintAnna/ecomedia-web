@@ -15,14 +15,16 @@ function PostImage({ url, autor }: { url: string; autor: string }) {
   if (falhou) return <div className="post-sem-imagem">Imagem indisponível</div>;
   // referrerPolicy: não conta aos sites das imagens de onde a pessoa chegou (e evita bloqueio por "hotlink")
   return (
-    <img
-      className="post-imagem"
-      src={url}
-      alt={`Foto enviada por ${autor}`}
-      loading="lazy"
-      referrerPolicy="no-referrer"
-      onError={() => setFalhou(true)}
-    />
+    <div className="post-imagem-moldura">
+      <img
+        className="post-imagem"
+        src={url}
+        alt={`Foto enviada por ${autor}`}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        onError={() => setFalhou(true)}
+      />
+    </div>
   );
 }
 

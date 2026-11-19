@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../auth/auth-context';
+import { Marca } from '../ilustracoes/Marca';
 import { ehAdmin } from '../lib/permissions';
 import { useTituloDaPagina } from '../lib/useTituloDaPagina';
 import { ServerStatus } from './ServerStatus';
@@ -35,7 +36,7 @@ export function Layout() {
       <header className="topo">
         <div className="container topo-linha">
           <Link to="/" className="marca" aria-label="EcoMedia, página inicial">
-            <span aria-hidden="true">🌱</span> EcoMedia
+            <Marca /> EcoMedia
           </Link>
           <nav aria-label="Principal">
             <NavLink to="/" end>
@@ -79,9 +80,14 @@ export function Layout() {
       <main id="conteudo" className="container">
         <Outlet />
       </main>
-      <footer className="rodape">
-        <div className="container">
-          EcoMedia · projeto do Recode ligado ao ODS 11: cidades e comunidades sustentáveis.
+      <footer className="rodape escuro">
+        <div className="container rodape-grade">
+          <div>
+            <p className="rodape-marca">
+              <Marca invertida /> EcoMedia
+            </p>
+            <p>Projeto do Recode ligado ao ODS 11: cidades e comunidades sustentáveis.</p>
+          </div>
         </div>
       </footer>
     </>

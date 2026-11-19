@@ -7,7 +7,7 @@ export function RequireAdmin() {
   const { user } = useAuth();
   if (!ehAdmin(user)) {
     return (
-      <section className="hero">
+      <section className="pagina-mensagem">
         <h1>Acesso restrito</h1>
         <p>Só administradores podem abrir esta página.</p>
         <Link to="/" className="btn">

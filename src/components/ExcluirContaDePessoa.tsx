@@ -34,7 +34,7 @@ export function ExcluirContaDePessoa({ perfil }: { perfil: Profile }) {
         <button
           type="button"
           className="btn btn-claro btn-perigo"
-          aria-label={`Excluir a conta de ${perfil.name}`}
+          aria-label={`Excluir esta conta de ${perfil.name}`}
           onClick={() => setConfirmando(true)}
         >
           Excluir esta conta
