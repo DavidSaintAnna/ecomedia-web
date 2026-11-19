@@ -21,6 +21,12 @@ export interface Category {
   description: string | null;
 }
 
+/** Corpo de POST e PUT /api/categories. */
+export interface CorpoCategoria {
+  name: string;
+  description?: string | null;
+}
+
 export interface Author {
   id: number;
   name: string;

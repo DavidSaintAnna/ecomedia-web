@@ -114,3 +114,24 @@ export function validarPerfil(v: { name: string; city: string; bio: string; avat
           : undefined,
   });
 }
+
+export const CATEGORIA_NOME_MINIMO = 2;
+export const CATEGORIA_NOME_MAXIMO = 60;
+export const CATEGORIA_DESCRICAO_MAXIMA = 300;
+
+/** Mesmas regras da API: nome de 2 a 60 caracteres, descrição (opcional) de até 300. */
+export function validarCategoria(v: { name: string; description: string }): Erros {
+  const nome = v.name.trim();
+  return limpar({
+    name:
+      nome.length < CATEGORIA_NOME_MINIMO
+        ? `O nome precisa ter pelo menos ${CATEGORIA_NOME_MINIMO} letras.`
+        : nome.length > CATEGORIA_NOME_MAXIMO
+          ? `O nome pode ter no máximo ${CATEGORIA_NOME_MAXIMO} letras.`
+          : undefined,
+    description:
+      v.description.trim().length > CATEGORIA_DESCRICAO_MAXIMA
+        ? `A descrição pode ter no máximo ${CATEGORIA_DESCRICAO_MAXIMA} caracteres.`
+        : undefined,
+  });
+}

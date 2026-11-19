@@ -1,6 +1,8 @@
 import { Route, Routes } from 'react-router';
+import { RequireAdmin } from './auth/RequireAdmin';
 import { RequireAuth } from './auth/RequireAuth';
 import { Layout } from './components/Layout';
+import { AdminCategorias } from './pages/AdminCategorias';
 import { Cadastro } from './pages/Cadastro';
 import { Conta } from './pages/Conta';
 import { EditarPost } from './pages/EditarPost';
@@ -30,6 +32,9 @@ export function App() {
           <Route path="feed" element={<Feed />} />
           <Route path="posts/novo" element={<Publicar />} />
           <Route path="posts/:id/editar" element={<EditarPost />} />
+          <Route element={<RequireAdmin />}>
+            <Route path="admin/categorias" element={<AdminCategorias />} />
+          </Route>
         </Route>
         <Route path="*" element={<NotFound />} />
       </Route>

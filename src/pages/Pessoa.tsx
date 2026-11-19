@@ -2,12 +2,15 @@ import { useEffect, useRef } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { usePessoas, usePosts, useProfile, type ListaDePessoas as TipoDeLista } from '../api/hooks';
 import type { Profile } from '../api/types';
+import { useAuth } from '../auth/auth-context';
 import { Avatar } from '../components/Avatar';
 import { BotaoSeguir } from '../components/BotaoSeguir';
+import { ExcluirContaDePessoa } from '../components/ExcluirContaDePessoa';
 import { ListaDePessoas } from '../components/ListaDePessoas';
 import { Paginacao } from '../components/Paginacao';
 import { PostCard } from '../components/PostCard';
 import { mesAno } from '../lib/dates';
+import { ehAdmin } from '../lib/permissions';
 import { plural } from '../lib/format';
 
 type Aba = 'publicacoes' | TipoDeLista;
@@ -74,6 +77,7 @@ function Cabecalho({ perfil }: { perfil: Profile }) {
 export function Pessoa() {
   const { id } = useParams();
   const personId = id && /^\d+$/.test(id) && Number(id) > 0 && Number.isSafeInteger(Number(id)) ? Number(id) : null;
+  const { user } = useAuth();
   const [params] = useSearchParams();
   const aba = lerAba(params.get('aba'));
   const pagina = lerPagina(params.get('pagina'));
@@ -199,6 +203,8 @@ export function Pessoa() {
           </>
         )}
       </section>
+
+      {ehAdmin(user) && user?.id !== p.id && <ExcluirContaDePessoa perfil={p} />}
     </>
   );
 }

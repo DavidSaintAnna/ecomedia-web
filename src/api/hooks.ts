@@ -2,7 +2,7 @@ import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClie
 import { reduzirImagem, type OpcoesDeReducao } from '../lib/imagem';
 import { api } from './client';
 import { patchPost } from './postCache';
-import type { Category, Comment, FollowResponse, ImagemEnviada, LikeResponse, Paginated, Person, Post, Profile, RankingItem, Stats } from './types';
+import type { Category, Comment, CorpoCategoria, FollowResponse, ImagemEnviada, LikeResponse, Paginated, Person, Post, Profile, RankingItem, Stats } from './types';
 
 export function useStats() {
   return useQuery({
@@ -274,6 +274,18 @@ export function useUpdateProfile() {
   });
 }
 
+/** Administrador exclui a conta de outra pessoa. Publicações, comentários, curtidas e seguidores dela somem, então tudo é baixado de novo. */
+export function useDeleteUser(id: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.delete(`/api/users/${id}`),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['profile', id] });
+      void queryClient.invalidateQueries(); // sem esperar: a tela já está saindo desta página
+    },
+  });
+}
+
 export function useDeleteAccount() {
   return useMutation({ mutationFn: () => api.delete('/api/users/me') });
 }
@@ -285,5 +297,31 @@ export function useEnviarFoto() {
       const pequena = await reduzirImagem(arquivo, opcoes);
       return api.upload<ImagemEnviada>('/api/images', pequena);
     },
+  });
+}
+
+// Administração de categorias (só ADMIN). A lista de categorias e os números do início mudam;
+// ao renomear, o nome também muda nas publicações já baixadas, então baixa tudo de novo.
+export function useCreateCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (corpo: CorpoCategoria) => api.post<Category>('/api/categories', corpo),
+    onSuccess: () => Promise.all([queryClient.invalidateQueries({ queryKey: ['categories'] }), queryClient.invalidateQueries({ queryKey: ['stats'] })]),
+  });
+}
+
+export function useUpdateCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...corpo }: CorpoCategoria & { id: number }) => api.put<Category>(`/api/categories/${id}`, corpo),
+    onSuccess: () => queryClient.invalidateQueries(),
+  });
+}
+
+export function useDeleteCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.delete(`/api/categories/${id}`),
+    onSuccess: () => Promise.all([queryClient.invalidateQueries({ queryKey: ['categories'] }), queryClient.invalidateQueries({ queryKey: ['stats'] })]),
   });
 }

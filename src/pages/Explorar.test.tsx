@@ -248,3 +248,21 @@ describe('Explorar: estados', () => {
     expect(screen.getByLabelText('Categoria')).toBeInTheDocument();
   });
 });
+
+describe('Explorar: categorias que não carregam', () => {
+  it('avisa no filtro e dá para tentar de novo, sem derrubar a lista de publicações', async () => {
+    let falhar = true;
+    mockApi({
+      'GET /api/posts': responderPosts([post(1), post(2)]),
+      'GET /api/categories': () => (falhar ? json({ error: 'InternalServerError', message: 'Algo deu errado. Tente novamente mais tarde' }, 500) : json(categoriasMock)),
+    });
+    renderApp('/explorar');
+    expect(await screen.findByText(/Não consegui carregar as categorias/)).toBeInTheDocument();
+    expect(await screen.findByText('Ação sustentável número 1')).toBeInTheDocument();
+
+    falhar = false;
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+    expect(await screen.findByRole('option', { name: 'Reciclagem' })).toBeInTheDocument();
+    expect(screen.queryByText(/Não consegui carregar as categorias/)).not.toBeInTheDocument();
+  });
+});

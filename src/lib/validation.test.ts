@@ -1,5 +1,5 @@
 import { ApiError } from '../api/client';
-import { errosDaApi, validarCadastro, validarEntrada, validarComentario, validarPerfil, validarPost } from './validation';
+import { errosDaApi, validarCadastro, validarEntrada, validarCategoria, validarComentario, validarPerfil, validarPost } from './validation';
 
 describe('validarCadastro', () => {
   const ok = { name: 'Maria Souza', email: 'maria@exemplo.com', password: '12345678', city: '' };
@@ -114,5 +114,20 @@ describe('validarPerfil', () => {
     expect(validarPerfil({ ...ok, avatarUrl: 'https://x.com/a.png' })).toEqual({});
     expect(validarPerfil({ ...ok, avatarUrl: 'abc' }).avatarUrl).toMatch(/link válido/);
     expect(validarPerfil({ ...ok, avatarUrl: 'javascript:alert(1)' }).avatarUrl).toMatch(/link válido/);
+  });
+});
+
+describe('validarCategoria', () => {
+  it('aceita nome de 2 a 60 letras e descrição vazia ou até 300', () => {
+    expect(validarCategoria({ name: 'Água', description: '' })).toEqual({});
+    expect(validarCategoria({ name: 'A'.repeat(60), description: 'x'.repeat(300) })).toEqual({});
+  });
+  it('recusa nome curto (sem contar espaços nas pontas) ou longo demais', () => {
+    expect(validarCategoria({ name: ' A ', description: '' }).name).toContain('pelo menos 2');
+    expect(validarCategoria({ name: '', description: '' }).name).toBeTruthy();
+    expect(validarCategoria({ name: 'A'.repeat(61), description: '' }).name).toContain('no máximo 60');
+  });
+  it('recusa descrição acima de 300', () => {
+    expect(validarCategoria({ name: 'Água', description: 'x'.repeat(301) }).description).toContain('no máximo 300');
   });
 });

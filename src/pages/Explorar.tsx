@@ -50,6 +50,8 @@ export function Explorar() {
         inicial={filtros}
         categorias={categorias.data ?? []}
         categoriasCarregando={categorias.isPending}
+        categoriasErro={categorias.isError ? categorias.error.message : undefined}
+        onTentarCategorias={() => void categorias.refetch()}
         temFiltro={ativo}
         onAplicar={(valores) => setParams(paraParams({ ...valores, page: 1 }))}
         onLimpar={() => setParams(new URLSearchParams())}

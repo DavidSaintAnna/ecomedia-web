@@ -1,6 +1,6 @@
 import { USUARIA, post } from '../test/utils';
 import type { AuthUser } from '../api/types';
-import { podeGerenciarPost } from './permissions';
+import { ehAdmin, podeGerenciarPost } from './permissions';
 
 const usuaria = USUARIA as AuthUser;
 
@@ -16,5 +16,13 @@ describe('podeGerenciarPost', () => {
   });
   it('visitante não pode', () => {
     expect(podeGerenciarPost(null, post(1))).toBe(false);
+  });
+});
+
+describe('ehAdmin', () => {
+  it('só quem tem o papel ADMIN', () => {
+    expect(ehAdmin({ ...usuaria, role: 'ADMIN' })).toBe(true);
+    expect(ehAdmin(usuaria)).toBe(false);
+    expect(ehAdmin(null)).toBe(false);
   });
 });

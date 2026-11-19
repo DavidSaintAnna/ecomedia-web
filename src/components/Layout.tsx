@@ -1,12 +1,15 @@
 import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../auth/auth-context';
+import { ehAdmin } from '../lib/permissions';
+import { useTituloDaPagina } from '../lib/useTituloDaPagina';
 import { ServerStatus } from './ServerStatus';
 
 export function Layout() {
   const { status, user, sessionError, retrySession, logout } = useAuth();
   const navigate = useNavigate();
   const { pathname, state } = useLocation();
+  useTituloDaPagina();
 
   // Primeiro leva para o início, depois encerra a sessão. Na ordem inversa, uma tela que exige login
   // (como /conta) veria a sessão acabar antes da troca de página e mandaria a pessoa para /entrar.
@@ -54,6 +57,7 @@ export function Layout() {
                 <NavLink to="/posts/novo" className="nav-destaque">
                   Publicar
                 </NavLink>
+                {ehAdmin(user) && <NavLink to="/admin/categorias">Categorias</NavLink>}
                 <NavLink to="/conta">{user.name.split(' ')[0]}</NavLink>
                 <button type="button" className="nav-botao" onClick={sair}>
                   Sair

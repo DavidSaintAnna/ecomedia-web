@@ -7,13 +7,16 @@ interface Props {
   inicial: ExplorarFiltros;
   categorias: Category[];
   categoriasCarregando: boolean;
+  /** Mensagem se a lista de categorias não carregou; com ela aparece o botão de tentar de novo. */
+  categoriasErro?: string;
+  onTentarCategorias?: () => void;
   temFiltro: boolean;
   onAplicar: (valores: Pick<ExplorarFiltros, 'q' | 'city' | 'categoryId'>) => void;
   onLimpar: () => void;
 }
 
 // O pai usa `key` com os filtros do endereço: quando o endereço muda (Voltar, Limpar), o formulário recomeça dele.
-export function FiltrosPosts({ inicial, categorias, categoriasCarregando, temFiltro, onAplicar, onLimpar }: Props) {
+export function FiltrosPosts({ inicial, categorias, categoriasCarregando, categoriasErro, onTentarCategorias, temFiltro, onAplicar, onLimpar }: Props) {
   const [q, setQ] = useState(inicial.q);
   const [city, setCity] = useState(inicial.city);
   const [categoryId, setCategoryId] = useState(inicial.categoryId);
@@ -45,6 +48,14 @@ export function FiltrosPosts({ inicial, categorias, categoriasCarregando, temFil
             </option>
           ))}
         </select>
+        {categoriasErro && (
+          <div role="alert" className="aviso-erro aviso-compacto">
+            <p>Não consegui carregar as categorias. {categoriasErro}</p>
+            <button type="button" className="btn btn-pequeno" onClick={onTentarCategorias}>
+              Tentar de novo
+            </button>
+          </div>
+        )}
       </div>
       <div className="filtros-acoes">
         <button type="submit" className="btn">

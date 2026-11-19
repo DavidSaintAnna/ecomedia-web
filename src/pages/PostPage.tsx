@@ -40,6 +40,7 @@ export function PostPage() {
 
       {post.data && (
         <>
+          <h1 className="so-leitor">Publicação de {post.data.author.name}</h1>
           <PostCard post={post.data} detalhe aoExcluir={depoisDeExcluir} />
           <Comentarios post={post.data} />
         </>
